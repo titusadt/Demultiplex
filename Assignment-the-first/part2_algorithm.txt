@@ -1,0 +1,52 @@
+
+def rev_comp(R3_index: str) -> int:
+    '''Takes in the sequence in the R3 index and returning the reverse complement of the index '''
+    reverse the index
+    use dictionary to get reverse complement
+    return reverse complement
+Input:ACTGGCATG
+Expected output: CATGCCAGT 
+
+
+def append_index(file):
+    '''Takes in files with the header that we need and returns a new header that has the index pairs appended to it'''
+    open the files
+        get header
+        get sequence
+        get plus 
+        get qual score
+        call rev_comp
+        make index pair with index from r2 and index from 3 
+    return header + index pair   #this is the new header that we want to write to the ouput files
+Input: @K00337:83:HJKJNBBXX:8:1101:1265:1191 1:N:0:1
+Output: @K00337:83:HJKJNBBXX:8:1101:1265:1191 1:N:0:1 NCTTCGAC-GTCGAAGN
+
+def make_dictionary(24_index_library):
+    '''takes in the 24 index library and returns a dictionary for the content in this file'''
+    open the file
+        read content into dictionary
+    return dictionary
+
+------------------------------------------------------------------------------------------------------------------------
+
+#done creating the files, so im opening and writing the new files
+open files(r1, r2, r3,r4):
+    #doing this for all of the files
+    open the files
+    get header
+    get sequence
+    get plus 
+    get qual score
+    call rev_comp function 
+    call append_index function
+    check if index is unknown (has an N ):
+        write r1 records of unkown indexes into 1 fastq file
+        write r4 records of unknow indexes into another fastq file
+    check if index in r2 is the same as index in r3:
+        call make dictionary function
+        write r1 record into file that is in the library that has dual matched pairs
+        write r4 record into file that is in the library that has dual matched pairs
+        #above creates 48 file - 24 for for the forward reads and 24 for the reverse reads
+    else:
+        write r1 records of unmatched indexes into 1 fastq file
+        write r4 records of unmatched indexes into another fastq file
