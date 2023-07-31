@@ -20,10 +20,10 @@
     For the index reads I think a cutoff score of 32 would be appropriate. It would remove lower quality reads while leaving us with a good amount of quality reads.
 
     3. `zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz | grep '@' -A 1 | grep -v '@' | grep -v '^--'| grep 'N' -c
-            3976613
-        zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | grep '@' -A 1 | grep -v '@' | grep -v '^--'| grep 'N' -c
-            3328051
-        CHALLENGE - zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R[2-3]_001.fastq.gz | grep '@' -A 1 | grep -v '@' | grep -v '^--'| grep 'N' -c
+            3976613`
+        `zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | grep '@' -A 1 | grep -v '@' | grep -v '^--'| grep 'N' -c
+            3328051`
+        `CHALLENGE - zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R[2-3]_001.fastq.gz | grep '@' -A 1 | grep -v '@' | grep -v '^--'| grep 'N' -c
             7304664`
     
 ## Part 2
