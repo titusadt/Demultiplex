@@ -17,7 +17,7 @@
     ![https://github.com/titusadt/Demultiplex/blob/master/Assignment-the-first/index2_plot.png](index2_plot.png "INDEX 2")
     ![https://github.com/titusadt/Demultiplex/blob/master/Assignment-the-first/read1_plot.png](read1_plot.png "READ 1")
     ![https://github.com/titusadt/Demultiplex/blob/master/Assignment-the-first/read2_plot.png](read2_plot.png "READ 2")
-
+    
     2. A good cutoff score for the biological read pairs would be 30. I got this from looking at the distribution plot and that showed that 35 is a good cutoff point that doesnt cause the loss of too much data and also ensures that good quality reads are left.
     For the index reads I think a cutoff score of 32 would be appropriate. It would remove lower quality reads while leaving us with a good amount of quality reads.
 
