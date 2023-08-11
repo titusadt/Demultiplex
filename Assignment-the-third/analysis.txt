@@ -1,0 +1,7 @@
+Number of Unknown: 30783962
+NUmber of Matched: 331755033
+Number of hopped: 707740
+Total amount of lines in the file: 363246735
+Percentage of unknown reads: 8.474669978795541
+Percentage of matched reads: 91.33049275721639
+Percentage of hopped reads: 0.19483726398807136
