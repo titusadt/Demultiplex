@@ -225,4 +225,4 @@ with open('hopped_instances.txt', 'w') as hopped_output:
     for key, value in hopped_pairs.items():
         hopped_total = (value/total)*100
         hopped_percent = (value/hopped)*100
-        hopped_output.write(f'{key}\t{value}\t{hopped_total}\n{hopped_percent}\n')
+        hopped_output.write(f'{key}\t{value}\t{hopped_total}\t{hopped_percent}\n')

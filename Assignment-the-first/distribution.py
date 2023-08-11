@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import gzip
 
 
+
 #GONNA ARGPARSE THE FILE INTO THIS
 def get_args():
     parser = argparse.ArgumentParser(description="A program for contig length distribution")

@@ -42,3 +42,209 @@ Used shel script to run code as an sbatch command
 #Part 2      #
 ##############
 Wrote a pseudo code for assignment the 3rd. more details in : /projects/bgmp/temi/bioinfo/Bi622/Demultiplex/Assignment-the-first/part2_algorithm.txt
+
+
+
+####################
+#Assignment the 3rd#
+####################
+Function log 
+-openfiles():
+    -input: file1='r2_testfile.fq.gz'
+    -ouput: ('@K00337:83:HJKJNBBXX:8:1101:2219:1191 2:N:0:1\n', 'NACCGGAT\n', '+\n', '#AAFFJFF\n')
+
+Had to download conda in my conda environment
+
+
+
+
+
+
+
+
+#!/usr/bin/env python
+
+import argparse
+import bioinfo
+import gzip
+import itertools
+import numpy as np
+
+# import matplotlib.pyplot as plt
+#file1='/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz'
+#file2='/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz'
+#file3='/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz'
+#file4='/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz'
+
+
+def get_args():
+    parser = argparse.ArgumentParser(description="A program for contig length distribution")
+    #parser.add_argument("-f1", "--file1", help="to specify the filename")#, required=True)
+    parser.add_argument("-l", "--seq_length", help="to specify the legnth of the sequences", type=int)
+    #parser.add_argument("-p", "--plotname", help="to specify the name of the bar plot")#, required=True)
+    return parser.parse_args()
+
+args=get_args()
+seq_length:int =args.seq_length
+
+file1='R1_head.fastq.gz'
+file2='R2_head.fastq.gz'
+file3='R3_head.fastq.gz'
+file4='R4_head.fastq.gz'
+# file1='/projects/bgmp/temi/bioinfo/Bi622/Demultiplex/Assignment-the-third/test/F1_test.fq.gz'
+# file2='/projects/bgmp/temi/bioinfo/Bi622/Demultiplex/Assignment-the-third/test/F2_test.fq.gz'
+# file3='/projects/bgmp/temi/bioinfo/Bi622/Demultiplex/Assignment-the-third/test/F3_test.fq.gz'
+# file4='/projects/bgmp/temi/bioinfo/Bi622/Demultiplex/Assignment-the-third/test/F4_test.fq.gz'
+
+indexes='/projects/bgmp/shared/2017_sequencing/indexes.txt'
+
+
+
+#creating counters to get the kown, unknow and blah blah blah countera
+matched:int=0
+hopped:int=0
+unknown:int=0
+
+
+
+def read_files(file)->tuple:
+    '''This function takes in the filename and reads each line in the record and returns a tuple'''
+    header = file.readline().strip()
+    sequence = file.readline().strip()
+    plus =  file.readline().strip()
+    qual_score = file.readline().strip()
+    return header, sequence, plus,qual_score
+
+def rev_comp(index2):
+    '''this function takes the second index (sequence in R3) and returns a reverse complement'''
+    index2_reverse = index2[::-1]
+    complement = {'A':'T', 'T':'A', 'C':'G', 'G':'C', 'N':'N'}
+    index_rev_comp=[]
+    for i in index2_reverse:
+        index_rev_comp.append(complement[i])
+    return ''.join(index_rev_comp)
+
+def append_header(r1_header, r4_header, index1, rev_comp):
+    '''this function takes the headers from r1 and r2 and append the index pairs to it and return the new header which will be written to the file'''
+    index_pair= index1+'-'+rev_comp
+    new_r1_header= r1_header+' '+index_pair
+    new_r4_header = r4_header+' '+index_pair
+    return new_r1_header, new_r4_header
+
+
+#list to hold average quality score
+qual_list:list=[]
+def get_cutoff(qual_score):
+    '''This function takes in the indexes and return True if any base is less than the cutoff and False if it is greater that the cutoff'''
+    qual_list=[0]*seq_length
+    for seq in range(0,len(qual_score)):
+        qual_list[seq]+=bioinfo.convert_phred(qual_score[seq])
+    #check if the individual base pairs is less than the cutoff
+    for i in qual_list:
+        if i<33: #magic number google me
+            return True
+        else:
+            return False
+
+#made the lookup index to create the output files
+index_set=set()
+with open(indexes, 'r') as index_file:
+    index_file.readline()
+    for line in index_file:
+        line =line.split('\t')[4].strip('\n')
+        index_set.add(line)
+#print(index_set)
+
+#matched_filename{key: indexs/barcodes (str), values:(filename_R1:str, filename_R2:str)}
+matched_filename={}
+def open_files():
+    '''this function loops through the index sets and creates output files to write to'''
+    for index in index_set:
+        #create filenames to write to
+        filename_R1 = index+'_R1.fastq'
+        filename_R4 = index+'_R2.fastq'
+        
+
+        #open the filenames
+        filename_R1 = open(filename_R1, 'w')
+        filename_R4 = open(filename_R4, 'w')
+
+        # print(filename_R1) 
+        # print(filename_R4)
+
+        #add them to matched_filename{key: indexex, values:(filename_R1, filename_R2)}
+        file_tuple = (filename_R1, filename_R4)
+        matched_filename[index]=file_tuple
+    return matched_filename
+
+#print(output)
+
+unmatched_r1 = open('unknown_r1.fastq', 'w') 
+unmatched_r2 = open('unknown_r2.fastq', 'w')
+hopped_r1 =open('hopped_r1.fastq', 'w')
+hopped_r2=open('hopped_r2.fastq', 'w')
+
+matched_dict=open_files()
+#print(matched_dict)
+with gzip.open(file1, 'rt') as f1, gzip.open(file2, 'rt') as f2, gzip.open(file3, 'rt') as f3,gzip.open(file4, 'rt') as f4:
+    
+    while True:
+        r1_header, r1_seq, r1_plus, r1_qual_score = read_files(f1)
+        i1_header, i1_seq, i1_plus, i1_qual_score = read_files(f2)
+        i2_header, i2_seq, i2_plus, i2_qual_score = read_files(f3)
+        r4_header, r4_seq, r4_plus, r4_qual_score = read_files(f4)
+        if r1_header == "" or r1_seq == "" or r1_plus == "" or r1_qual_score == "":
+            break
+        #get the reverse complement of the 2nd index
+        reverse_comp = rev_comp(i2_seq)
+        new_r1_header, new_r4_header=append_header(r1_header, r4_header, i1_seq, reverse_comp)
+        #get the means for the indexes
+        index1_mean = get_cutoff(i1_qual_score)
+        index2_mean = get_cutoff(i2_qual_score)
+        #print(f'index 1 mean: {index1_mean}\nindex 2 mean: {index2_mean}')
+        
+        #checking N is in index the indexes or if it is less than the cut off
+        if 'N' in i1_seq or 'N' in i2_seq or index1_mean ==True  or index2_mean ==True:
+            unknown+=1
+            #print(unknown)
+            #write unmatched R1 records to a new file, and write unmatched R2 records to a new file
+            unmatched_r1.write(f'{new_r1_header}\n{r1_seq}\n{r1_plus}\n{r1_qual_score}\n')
+            unmatched_r2.write(f'{new_r4_header}\n{r4_seq}\n{r4_plus}\n{r4_qual_score}\n')
+        #Now write the index matched files to their resperctive files
+
+        # matched_dict.items()
+        # matched_dict.keys()exit
+
+        # if my_test_key in matched_dict.keys()
+        # if my_test_key in matched_dict
+
+        # for my_thing in my_things:
+
+        #dictionaries ususally just loop through keys when no specification is made.
+        elif i1_seq == reverse_comp and i1_seq in matched_dict:
+            matched+=1
+            for index, filename_tuple in matched_dict.items():
+                r1_fh, r4_fh = filename_tuple
+                r1_fh.write(f'{new_r1_header}\n{r1_seq}\n{r1_plus}\n{r1_qual_score}\n')
+                r4_fh.write(f'{new_r4_header}\n{r4_seq}\n{r4_plus}\n{r4_qual_score}\n')
+        else:
+            hopped+=1
+            hopped_r1.write(f'{new_r1_header}\n{r1_seq}\n{r1_plus}\n{r1_qual_score}\n')
+            hopped_r2.write(f'{new_r4_header}\n{r4_seq}\n{r4_plus}\n{r4_qual_score}\n')
+
+#close the files youre writing too
+unmatched_r1.close()
+unmatched_r2.close()
+hopped_r1.close()
+hopped_r2.close()
+
+#close the matched files
+for r1_fh, r2_fh in matched_dict.values():
+    r1_fh.close()
+    r2_fh.close()
+
+
+#ANALYSIS AREA
+print(f'Number of Unknown: {unknown}')
+print(f'NUmber of Matched: {matched}')
+print(f'Number of hopped: {hopped}')
